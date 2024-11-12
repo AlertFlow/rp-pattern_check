@@ -7,6 +7,7 @@ import (
 	"gitlab.justlab.xyz/alertflow-public/runner/pkg/executions"
 	"gitlab.justlab.xyz/alertflow-public/runner/pkg/models"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 
 	log "github.com/sirupsen/logrus"
@@ -23,16 +24,18 @@ func (p *PatternCheckPlugin) Init() models.Plugin {
 	}
 }
 
-func (p *PatternCheckPlugin) Details() models.ActionDetails {
-	return models.ActionDetails{
-		Name:        "Pattern Check",
-		Description: "Check flow patterns",
-		Icon:        "solar:list-check-minimalistic-bold",
-		Type:        "pattern_check",
-		Category:    "Utility",
-		Function:    p.Execute,
-		IsHidden:    true,
-		Params:      nil,
+func (p *PatternCheckPlugin) Details() models.PluginDetails {
+	return models.PluginDetails{
+		Action: models.ActionDetails{
+			Name:        "Pattern Check",
+			Description: "Check flow patterns",
+			Icon:        "solar:list-check-minimalistic-bold",
+			Type:        "pattern_check",
+			Category:    "Utility",
+			Function:    p.Execute,
+			IsHidden:    true,
+			Params:      nil,
+		},
 	}
 }
 
@@ -154,5 +157,7 @@ func (p *PatternCheckPlugin) Execute(execution models.Execution, flow models.Flo
 		return nil, true, false, false, false
 	}
 }
+
+func (p *PatternCheckPlugin) Handle(context *gin.Context) {}
 
 var Plugin PatternCheckPlugin
