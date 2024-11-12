@@ -14,7 +14,16 @@ import (
 
 type PatternCheckPlugin struct{}
 
-func (p *PatternCheckPlugin) Init() models.ActionDetails {
+func (p *PatternCheckPlugin) Init() models.Plugin {
+	return models.Plugin{
+		Name:    "Pattern Check",
+		Type:    "action",
+		Version: "1.0.1",
+		Creator: "JustNZ",
+	}
+}
+
+func (p *PatternCheckPlugin) Details() models.ActionDetails {
 	return models.ActionDetails{
 		Name:        "Pattern Check",
 		Description: "Check flow patterns",
