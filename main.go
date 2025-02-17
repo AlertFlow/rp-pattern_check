@@ -52,7 +52,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	}
 
 	// convert payload to string
-	payloadBytes, err := json.Marshal(request.Payload)
+	payloadBytes, err := json.Marshal(request.Payload.Payload)
 	if err != nil {
 		return plugins.Response{}, err
 	}
