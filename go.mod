@@ -1,4 +1,4 @@
-module github.com/AlertFlow/rp-pattern-check
+module github.com/AlertFlow/rp-pattern_check
 
 go 1.23
 
