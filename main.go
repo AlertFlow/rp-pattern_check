@@ -43,7 +43,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 			FinishedAt: time.Now(),
 		})
 		if err != nil {
-			return plugins.Response{}, err
+			return plugins.Response{
+				Success: false,
+			}, err
 		}
 
 		return plugins.Response{
@@ -54,7 +56,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 	// convert payload to string
 	payloadBytes, err := json.Marshal(request.Payload.Payload)
 	if err != nil {
-		return plugins.Response{}, err
+		return plugins.Response{
+			Success: false,
+		}, err
 	}
 	payloadString := string(payloadBytes)
 
@@ -70,7 +74,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					Messages: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` matched. Continue to next step`},
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -80,7 +86,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					FinishedAt: time.Now(),
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 				patternMissMatched++
 			}
@@ -91,7 +99,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					Messages: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` not found. Continue to next step`},
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -101,7 +111,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					FinishedAt: time.Now(),
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 				patternMissMatched++
 			}
@@ -122,7 +134,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					FinishedAt: time.Now(),
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 				patternMissMatched++
 			}
@@ -133,7 +147,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					Messages: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` not found. Continue to next step`},
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
@@ -143,7 +159,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 					FinishedAt: time.Now(),
 				})
 				if err != nil {
-					return plugins.Response{}, err
+					return plugins.Response{
+						Success: false,
+					}, err
 				}
 				patternMissMatched++
 			}
@@ -158,7 +176,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 			FinishedAt: time.Now(),
 		})
 		if err != nil {
-			return plugins.Response{}, err
+			return plugins.Response{
+				Success: false,
+			}, err
 		}
 		return plugins.Response{
 			Data: map[string]interface{}{
@@ -174,7 +194,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 			FinishedAt: time.Now(),
 		})
 		if err != nil {
-			return plugins.Response{}, err
+			return plugins.Response{
+				Success: false,
+			}, err
 		}
 		return plugins.Response{
 			Success: true,
