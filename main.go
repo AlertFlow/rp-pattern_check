@@ -45,6 +45,7 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 		if err != nil {
 			return plugins.Response{}, err
 		}
+
 		return plugins.Response{
 			Success: true,
 		}, nil
@@ -160,6 +161,9 @@ func (p *CollectDataActionPlugin) ExecuteTask(request plugins.ExecuteTaskRequest
 			return plugins.Response{}, err
 		}
 		return plugins.Response{
+			Data: map[string]interface{}{
+				"status": "noPatternMatch",
+			},
 			Success: false,
 		}, nil
 	} else {
