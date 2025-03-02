@@ -54,7 +54,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	// convert payload to string
-	payloadBytes, err := json.Marshal(request.Payload.Payload)
+	payloadBytes, err := json.Marshal(request.Alert.Payload)
 	if err != nil {
 		return plugins.Response{
 			Success: false,
@@ -204,7 +204,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 }
 
-func (p *Plugin) HandlePayload(request plugins.PayloadHandlerRequest) (plugins.Response, error) {
+func (p *Plugin) HandleAlert(request plugins.AlertHandlerRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
 	}, errors.New("not implemented")
@@ -214,7 +214,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 	var plugin = models.Plugins{
 		Name:    "Pattern Check",
 		Type:    "action",
-		Version: "1.1.0",
+		Version: "1.1.1",
 		Author:  "JustNZ",
 		Actions: models.Actions{
 			Name:        "Pattern Check",
@@ -224,7 +224,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 			Category:    "Utility",
 			Params:      nil,
 		},
-		Endpoints: models.PayloadEndpoints{},
+		Endpoints: models.AlertEndpoints{},
 	}
 
 	return plugin, nil
@@ -241,8 +241,8 @@ func (s *PluginRPCServer) ExecuteTask(request plugins.ExecuteTaskRequest, resp *
 	return err
 }
 
-func (s *PluginRPCServer) HandlePayload(request plugins.PayloadHandlerRequest, resp *plugins.Response) error {
-	result, err := s.Impl.HandlePayload(request)
+func (s *PluginRPCServer) HandleAlert(request plugins.AlertHandlerRequest, resp *plugins.Response) error {
+	result, err := s.Impl.HandleAlert(request)
 	*resp = result
 	return err
 }
