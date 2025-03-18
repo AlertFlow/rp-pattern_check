@@ -11,7 +11,8 @@ import (
 	"github.com/v1Flows/runner/pkg/executions"
 	"github.com/v1Flows/runner/pkg/plugins"
 
-	"github.com/v1Flows/alertFlow/services/backend/pkg/models"
+	af_models "github.com/v1Flows/alertFlow/services/backend/pkg/models"
+	"github.com/v1Flows/shared-library/pkg/models"
 
 	"github.com/hashicorp/go-plugin"
 )
@@ -24,24 +25,48 @@ type Receiver struct {
 type Plugin struct{}
 
 func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Response, error) {
+	if request.Platform != "alertflow" {
+		return plugins.Response{
+			Success: false,
+		}, errors.New("platform not supported")
+	}
+
 	err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-		ID:        request.Step.ID,
-		Messages:  []string{"Checking for patterns"},
+		ID: request.Step.ID,
+		Messages: []models.Message{
+			{
+				Title: "Pattern Check",
+				Lines: []string{"Checking for patterns"},
+			},
+		},
 		Status:    "running",
 		StartedAt: time.Now(),
-	})
+	}, request.Platform)
 	if err != nil {
 		return plugins.Response{}, err
 	}
 
+	var flow af_models.Flows
+	err = json.Unmarshal(request.FlowBytes, &flow)
+	if err != nil {
+		return plugins.Response{
+			Success: false,
+		}, err
+	}
+
 	// end if there are no patterns
-	if len(request.Flow.Patterns) == 0 {
+	if len(flow.Patterns) == 0 {
 		err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-			ID:         request.Step.ID,
-			Messages:   []string{"No patterns are defined. Continue to next step"},
+			ID: request.Step.ID,
+			Messages: []models.Message{
+				{
+					Title: "Pattern Check",
+					Lines: []string{"No patterns are defined", "Continue to next step"},
+				},
+			},
 			Status:     "success",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -64,15 +89,20 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	patternMissMatched := 0
 
-	for _, pattern := range request.Flow.Patterns {
+	for _, pattern := range flow.Patterns {
 		value := gjson.Get(payloadString, pattern.Key)
 
 		if pattern.Type == "equals" {
 			if value.String() == pattern.Value {
 				err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:       request.Step.ID,
-					Messages: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` matched. Continue to next step`},
-				})
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` matched`, "Continue to next step"},
+						},
+					},
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -80,11 +110,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:         request.Step.ID,
-					Messages:   []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` not found.`},
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` not found`},
+						},
+					},
 					Status:     "canceled",
 					FinishedAt: time.Now(),
-				})
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -95,9 +130,14 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		} else if pattern.Type == "not_equals" {
 			if value.String() != pattern.Value {
 				err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:       request.Step.ID,
-					Messages: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` not found. Continue to next step`},
-				})
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` not found`, "Continue to next step"},
+						},
+					},
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -105,11 +145,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:         request.Step.ID,
-					Messages:   []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` matched.`},
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` matched`},
+						},
+					},
 					Status:     "canceled",
 					FinishedAt: time.Now(),
-				})
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -120,19 +165,29 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		} else if pattern.Type == "contains" {
 			if !strings.Contains(value.String(), pattern.Value) {
 				err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:       request.Step.ID,
-					Messages: []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` not found. Continue to next step`},
-				})
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` not found`, "Continue to next step"},
+						},
+					},
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{}, err
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:         request.Step.ID,
-					Messages:   []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` matched.`},
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` matched`},
+						},
+					},
 					Status:     "canceled",
 					FinishedAt: time.Now(),
-				})
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -143,9 +198,14 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		} else if pattern.Type == "not_contains" {
 			if strings.Contains(value.String(), pattern.Value) {
 				err := executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:       request.Step.ID,
-					Messages: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` not found. Continue to next step`},
-				})
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` not found`, "Continue to next step"},
+						},
+					},
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -153,11 +213,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 				}
 			} else {
 				err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-					ID:         request.Step.ID,
-					Messages:   []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` matched.`},
+					ID: request.Step.ID,
+					Messages: []models.Message{
+						{
+							Title: "Pattern Check",
+							Lines: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` matched`},
+						},
+					},
 					Status:     "canceled",
 					FinishedAt: time.Now(),
-				})
+				}, request.Platform)
 				if err != nil {
 					return plugins.Response{
 						Success: false,
@@ -170,11 +235,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	if patternMissMatched > 0 {
 		err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-			ID:         request.Step.ID,
-			Messages:   []string{"Some patterns did not match. Cancel execution"},
+			ID: request.Step.ID,
+			Messages: []models.Message{
+				{
+					Title: "Pattern Check",
+					Lines: []string{"Some patterns did not match", "Cancel execution"},
+				},
+			},
 			Status:     "noPatternMatch",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -188,11 +258,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		}, nil
 	} else {
 		err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
-			ID:         request.Step.ID,
-			Messages:   []string{"All patterns matched. Continue to next step"},
+			ID: request.Step.ID,
+			Messages: []models.Message{
+				{
+					Title: "Pattern Check",
+					Lines: []string{"All patterns matched", "Continue to next step"},
+				},
+			},
 			Status:     "success",
 			FinishedAt: time.Now(),
-		})
+		}, request.Platform)
 		if err != nil {
 			return plugins.Response{
 				Success: false,
@@ -204,19 +279,19 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 }
 
-func (p *Plugin) HandleAlert(request plugins.AlertHandlerRequest) (plugins.Response, error) {
+func (p *Plugin) EndpointRequest(request plugins.EndpointRequest) (plugins.Response, error) {
 	return plugins.Response{
 		Success: false,
 	}, errors.New("not implemented")
 }
 
-func (p *Plugin) Info() (models.Plugins, error) {
-	var plugin = models.Plugins{
+func (p *Plugin) Info() (models.Plugin, error) {
+	var plugin = models.Plugin{
 		Name:    "Pattern Check",
 		Type:    "action",
 		Version: "1.1.2",
 		Author:  "JustNZ",
-		Actions: models.Actions{
+		Action: models.Action{
 			Name:        "Pattern Check",
 			Description: "Check flow patterns",
 			Plugin:      "pattern_check",
@@ -224,7 +299,7 @@ func (p *Plugin) Info() (models.Plugins, error) {
 			Category:    "Utility",
 			Params:      nil,
 		},
-		Endpoints: models.AlertEndpoints{},
+		Endpoint: models.Endpoint{},
 	}
 
 	return plugin, nil
@@ -241,13 +316,13 @@ func (s *PluginRPCServer) ExecuteTask(request plugins.ExecuteTaskRequest, resp *
 	return err
 }
 
-func (s *PluginRPCServer) HandleAlert(request plugins.AlertHandlerRequest, resp *plugins.Response) error {
-	result, err := s.Impl.HandleAlert(request)
+func (s *PluginRPCServer) EndpointRequest(request plugins.EndpointRequest, resp *plugins.Response) error {
+	result, err := s.Impl.EndpointRequest(request)
 	*resp = result
 	return err
 }
 
-func (s *PluginRPCServer) Info(args interface{}, resp *models.Plugins) error {
+func (s *PluginRPCServer) Info(args interface{}, resp *models.Plugin) error {
 	result, err := s.Impl.Info()
 	*resp = result
 	return err
