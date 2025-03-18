@@ -21,6 +21,10 @@ type Receiver struct {
 	Receiver string `json:"receiver"`
 }
 
+type IncomingFlow struct {
+	Flow af_models.Flows `json:"flow"`
+}
+
 // Plugin is an implementation of the Plugin interface
 type Plugin struct{}
 
@@ -46,7 +50,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		return plugins.Response{}, err
 	}
 
-	var flow af_models.Flows
+	var flow IncomingFlow
 	err = json.Unmarshal(request.FlowBytes, &flow)
 	if err != nil {
 		return plugins.Response{
@@ -55,7 +59,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 	}
 
 	// end if there are no patterns
-	if len(flow.Patterns) == 0 {
+	if len(flow.Flow.Patterns) == 0 {
 		err = executions.UpdateStep(request.Config, request.Execution.ID.String(), models.ExecutionSteps{
 			ID: request.Step.ID,
 			Messages: []models.Message{
@@ -89,7 +93,7 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 
 	patternMissMatched := 0
 
-	for _, pattern := range flow.Patterns {
+	for _, pattern := range flow.Flow.Patterns {
 		value := gjson.Get(payloadString, pattern.Key)
 
 		if pattern.Type == "equals" {
