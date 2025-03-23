@@ -40,7 +40,11 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 		Messages: []models.Message{
 			{
 				Title: "Pattern Check",
-				Lines: []string{"Checking for patterns"},
+				Lines: []models.Line{
+					{
+						Content: "Checking patterns",
+					},
+				},
 			},
 		},
 		Status:    "running",
@@ -65,7 +69,15 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Pattern Check",
-					Lines: []string{"No patterns are defined", "Continue to next step"},
+					Lines: []models.Line{
+						{
+							Content: "No patterns are defined",
+						},
+						{
+							Content: "Continue to next step",
+							Color:   "success",
+						},
+					},
 				},
 			},
 			Status:     "success",
@@ -103,7 +115,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` matched`, "Continue to next step"},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` matched`,
+									Color:   "success",
+								},
+								{
+									Content: "Continue to next step",
+									Color:   "success",
+								},
+							},
 						},
 					},
 				}, request.Platform)
@@ -118,7 +139,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` not found`},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` == ` + pattern.Value + ` not found`,
+									Color:   "danger",
+								},
+							},
 						},
 					},
 					Status:     "canceled",
@@ -138,7 +164,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` not found`, "Continue to next step"},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` not found`,
+									Color:   "success",
+								},
+								{
+									Content: "Continue to next step",
+									Color:   "success",
+								},
+							},
 						},
 					},
 				}, request.Platform)
@@ -153,7 +188,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` matched`},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` != ` + pattern.Value + ` matched`,
+									Color:   "danger",
+								},
+							},
 						},
 					},
 					Status:     "canceled",
@@ -173,7 +213,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` not found`, "Continue to next step"},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` not found`,
+									Color:   "success",
+								},
+								{
+									Content: "Continue to next step",
+									Color:   "success",
+								},
+							},
 						},
 					},
 				}, request.Platform)
@@ -186,7 +235,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` matched`},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` contains ` + pattern.Value + ` matched`,
+									Color:   "danger",
+								},
+							},
 						},
 					},
 					Status:     "canceled",
@@ -206,7 +260,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` not found`, "Continue to next step"},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` not found`,
+									Color:   "success",
+								},
+								{
+									Content: "Continue to next step",
+									Color:   "success",
+								},
+							},
 						},
 					},
 				}, request.Platform)
@@ -221,7 +284,12 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 					Messages: []models.Message{
 						{
 							Title: "Pattern Check",
-							Lines: []string{`Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` matched`},
+							Lines: []models.Line{
+								{
+									Content: `Pattern: ` + pattern.Key + ` not contains ` + pattern.Value + ` matched`,
+									Color:   "danger",
+								},
+							},
 						},
 					},
 					Status:     "canceled",
@@ -243,7 +311,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Pattern Check",
-					Lines: []string{"Some patterns did not match", "Cancel execution"},
+					Lines: []models.Line{
+						{
+							Content: "Some patterns did not match",
+							Color:   "danger",
+						},
+						{
+							Content: "Cancel execution",
+							Color:   "danger",
+						},
+					},
 				},
 			},
 			Status:     "noPatternMatch",
@@ -266,7 +343,16 @@ func (p *Plugin) ExecuteTask(request plugins.ExecuteTaskRequest) (plugins.Respon
 			Messages: []models.Message{
 				{
 					Title: "Pattern Check",
-					Lines: []string{"All patterns matched", "Continue to next step"},
+					Lines: []models.Line{
+						{
+							Content: "All patterns matched",
+							Color:   "success",
+						},
+						{
+							Content: "Continue to next step",
+							Color:   "success",
+						},
+					},
 				},
 			},
 			Status:     "success",
@@ -293,7 +379,7 @@ func (p *Plugin) Info(request plugins.InfoRequest) (models.Plugin, error) {
 	var plugin = models.Plugin{
 		Name:    "Pattern Check",
 		Type:    "action",
-		Version: "1.2.1",
+		Version: "1.2.2",
 		Author:  "JustNZ",
 		Action: models.Action{
 			Name:        "Pattern Check",
